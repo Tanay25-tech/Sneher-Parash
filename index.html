@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        // 1. Intercept console.error and console.warn for Vite WebSocket noise in AI Studio
+        var origConsoleError = console.error;
+        console.error = function() {
+          var str = '';
+          for (var i = 0; i < arguments.length; i++) {
+            str += ' ' + String(arguments[i]);
+          }
+          if (str.indexOf('[vite] failed to connect to websocket') !== -1 ||
+              str.indexOf('WebSocket closed without opened') !== -1 ||
+              str.indexOf('vite-hmr') !== -1) {
+            return;
+          }
+          origConsoleError.apply(console, arguments);
+        };
+
+        var origConsoleWarn = console.warn;
+        console.warn = function() {
+          var str = '';
+          for (var i = 0; i < arguments.length; i++) {
+            str += ' ' + String(arguments[i]);
+          }
+          if (str.indexOf('WebSocket') !== -1 && str.indexOf('closed without opened') !== -1) {
+            return;
+          }
+          origConsoleWarn.apply(console, arguments);
+        };
+
+        // 2. Suppress unhandled promise rejections related to WebSocket
+        window.addEventListener('unhandledrejection', function(event) {
+          var msg = (event && event.reason && (event.reason.message || String(event.reason))) || '';
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('closed without opened') !== -1) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        // 3. Provide a silent dummy WebSocket handler for 'vite-hmr' since HMR is disabled
+        if (typeof window.WebSocket !== 'undefined') {
+          var RealWebSocket = window.WebSocket;
+          window.WebSocket = function(url, protocols) {
+            var protoStr = Array.isArray(protocols) ? protocols.join(',') : String(protocols || '');
+            if (protoStr.indexOf('vite-hmr') !== -1) {
+              var dummy = new EventTarget();
+              dummy.send = function() {};
+              dummy.close = function() {};
+              dummy.readyState = 1; // OPEN
+              dummy.url = url;
+              dummy.protocol = 'vite-hmr';
+              setTimeout(function() {
+                var openEvt = new Event('open');
+                dummy.dispatchEvent(openEvt);
+              }, 10);
+              return dummy;
+            }
+            return new RealWebSocket(url, protocols);
+          };
+          window.WebSocket.prototype = RealWebSocket.prototype;
+          window.WebSocket.CONNECTING = 0;
+          window.WebSocket.OPEN = 1;
+          window.WebSocket.CLOSING = 2;
+          window.WebSocket.CLOSED = 3;
+        }
+      })();
+    </script>
+    <title>EdTech Executive Ghostwriter — Career &amp; ROI Transformation</title>
+    <meta name="description" content="B2B executive ghostwriting workspace for EdTech leaders, transforming raw upskilling concepts, student transition metrics, and career ROI into high-impact LinkedIn thought leadership." />
+    <meta property="og:title" content="EdTech Executive Ghostwriter — Career &amp; ROI Transformation" />
+    <meta property="og:description" content="B2B executive ghostwriting workspace for EdTech leaders, transforming raw upskilling concepts, student transition metrics, and career ROI into high-impact LinkedIn thought leadership." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

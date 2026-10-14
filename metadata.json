@@ -1,0 +1,6 @@
+{
+  "name": "EdTech Executive Ghostwriter",
+  "description": "B2B executive ghostwriting workspace for EdTech leaders, transforming raw upskilling concepts, student transition metrics, and career ROI into high-impact LinkedIn thought leadership.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
